@@ -351,18 +351,18 @@ teardown() {
   run resolve_symlink bar
   [ "$status" -eq 0 ]
   echo $status
-  [ "$output" = $(pwd)/foo ]
+  [ "$output" = "$(pwd -P)/foo" ]
   rm -f foo bar
 }
 
 @test "resolve_symlink converts relative symlink path to the real file path" {
   touch foo
   ln -s foo bar
-
   run resolve_symlink bar
+  
   [ "$status" -eq 0 ]
   echo $status
-  [ "$output" = $(pwd)/foo ]
+  [ "$output" = "$(pwd -P)/foo" ]
   rm -f foo bar
 }
 
