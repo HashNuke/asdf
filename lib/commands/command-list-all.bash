@@ -1,8 +1,9 @@
 # -*- sh -*-
+set -o nounset
 
 list_all_command() {
-  local plugin_name=$1
-  local query=$2
+  local plugin_name=${1:-}
+  local query=${2:-}
   local plugin_path
   plugin_path=$(get_plugin_path "$plugin_name")
   check_if_plugin_exists "$plugin_name"

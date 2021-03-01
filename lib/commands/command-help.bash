@@ -1,4 +1,5 @@
 # -*- sh -*-
+set -o nounset
 
 asdf_help() {
   printf "version: %s\\n\\n" "$(asdf_version)"
@@ -29,8 +30,8 @@ asdf_extension_cmds() {
 }
 
 help_command() {
-  local plugin_name="$1"
-  local tool_version="$2"
+  local plugin_name="${1:-}"
+  local tool_version="${2:-}"
   local plugin_path
 
   # If plugin name is present as first argument output plugin help info
@@ -90,7 +91,7 @@ help_command() {
 }
 
 print_plugin_help() {
-  local plugin_path=$1
+  local plugin_path=${1:-}
 
   # Eventually @jthegedus or someone else will format the output from these
   # scripts in a certain way.

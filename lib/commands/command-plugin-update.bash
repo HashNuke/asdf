@@ -1,4 +1,5 @@
 # -*- sh -*-
+set -o nounset
 
 plugin_update_command() {
   if [ "$#" -lt 1 ]; then
@@ -6,7 +7,7 @@ plugin_update_command() {
     exit 1
   fi
 
-  local plugin_name="$1"
+  local plugin_name="${1:-}"
   local gitref="${2:-master}"
   if [ "$plugin_name" = "--all" ]; then
     if [ -d "$(asdf_data_dir)"/plugins ]; then
@@ -26,7 +27,7 @@ plugin_update_command() {
 }
 
 update_plugin() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
   local plugin_path=$2
   local gitref=$3
   logfile=$(mktemp)

@@ -1,11 +1,12 @@
 # -*- sh -*-
+set -o nounset
 
 # shellcheck source=lib/commands/reshim.bash
 source "$(dirname "$ASDF_CMD_FILE")/reshim.bash"
 
 reshim_command() {
-  local plugin_name=$1
-  local full_version=$2
+  local plugin_name=${1:-}
+  local full_version=${2:-}
 
   if [ -z "$plugin_name" ]; then
     local plugins_path
@@ -25,9 +26,11 @@ reshim_command() {
 
   if [ "$full_version" != "" ]; then
     # generate for the whole package version
+    local full_version_name
+    full_version_name=$(basename "$full_version" | sed 's/ref\-/ref\:/')
     asdf_run_hook "pre_asdf_reshim_$plugin_name" "$full_version_name"
-    generate_shims_for_version "$plugin_name" "$full_version"
-    asdf_run_hook "post_asdf_reshim_$plugin_name" "$full_version"
+    generate_shims_for_version "$plugin_name" "$full_version_name"
+    asdf_run_hook "post_asdf_reshim_$plugin_name" "$full_version_name"
   else
     # generate for all versions of the package
     local plugin_installs_path
@@ -53,7 +56,7 @@ ensure_shims_dir() {
 }
 
 write_shim_script() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
   local version=$2
   local executable_path=$3
 
@@ -84,7 +87,7 @@ EOF
 }
 
 generate_shim_for_executable() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
   local executable=$2
 
   check_if_plugin_exists "$plugin_name"
@@ -101,7 +104,7 @@ generate_shim_for_executable() {
 }
 
 generate_shims_for_version() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
   local full_version=$2
   for executable_path in $(plugin_executables "$plugin_name" "$full_version"); do
     write_shim_script "$plugin_name" "$full_version" "$executable_path"
@@ -109,7 +112,7 @@ generate_shims_for_version() {
 }
 
 remove_obsolete_shims() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
   local full_version=$2
 
   local shims

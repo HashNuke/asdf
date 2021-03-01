@@ -1,7 +1,8 @@
 # -*- sh -*-
+set -o nounset
 
 version_command() {
-  local cmd=$1
+  local cmd=${1:-}
   local plugin_name=$2
 
   if [ "$#" -lt "3" ]; then

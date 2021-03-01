@@ -1,8 +1,9 @@
 # -*- sh -*-
+set -o nounset
 
 shim_env_command() {
-  local shim_name="$1"
-  local env_cmd="${2}"
+  local shim_name="${1:-}"
+  local env_cmd="${2:-}"
   local env_args=("${@:3}")
 
   if [ -z "$shim_name" ]; then
@@ -15,7 +16,10 @@ shim_env_command() {
   fi
 
   shim_env() {
-    "$env_cmd" "${env_args[@]}"
+    # Yes, the syntax for the expansion is ugly and confusing, but it is what we
+    # need to do to make it work with the nounset option. See
+    # https://stackoverflow.com/q/7577052/ for the details
+    "$env_cmd" ${env_args[@]+"${env_args[@]}"}
   }
 
   with_shim_executable "$shim_name" shim_env || exit $?

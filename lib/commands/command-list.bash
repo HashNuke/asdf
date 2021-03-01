@@ -1,7 +1,8 @@
 # -*- sh -*-
+set -o nounset
 
 list_command() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
 
   if [ -z "$plugin_name" ]; then
     local plugins_path
@@ -24,7 +25,7 @@ list_command() {
 
 display_installed_versions() {
   local versions
-  versions=$(list_installed_versions "$1")
+  versions=$(list_installed_versions "${1:-}")
 
   if [ -n "${versions}" ]; then
     for version in $versions; do

@@ -1,9 +1,10 @@
 # -*- sh -*-
+set -o nounset
 
 # shellcheck disable=SC2059
 plugin_current_command() {
-  local plugin_name=$1
-  local terminal_format=$2
+  local plugin_name=${1:-}
+  local terminal_format=${2:-}
 
   check_if_plugin_exists "$plugin_name"
 
@@ -19,7 +20,7 @@ plugin_current_command() {
   local description=""
 
   IFS=' ' read -r -a versions <<<"$full_version"
-  for version in "${versions[@]}"; do
+  for version in "${versions[@]:-}"; do
     if ! (check_if_version_exists "$plugin_name" "$version"); then
       version_not_installed="$version"
     fi
@@ -51,7 +52,7 @@ current_command() {
       plugin_current_command "$plugin" "$terminal_format"
     done
   else
-    local plugin=$1
+    local plugin=${1:-}
     plugin_current_command "$plugin" "$terminal_format"
     exit_status="$?"
   fi
@@ -61,7 +62,7 @@ current_command() {
 
 # Warn if the plugin isn't using the updated legacy file api.
 check_for_deprecated_plugin() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
 
   local plugin_path
   plugin_path=$(get_plugin_path "$plugin_name")

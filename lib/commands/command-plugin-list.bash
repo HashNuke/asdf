@@ -1,4 +1,5 @@
 # -*- sh -*-
+set -o nounset
 
 plugin_list_command() {
   local plugins_path
@@ -8,7 +9,7 @@ plugin_list_command() {
   local show_ref
 
   while [ -n "$*" ]; do
-    case "$1" in
+    case "${1:-}" in
     "--urls")
       show_repo=true
       shift

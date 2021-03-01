@@ -1,3 +1,5 @@
+set -o nounset
+
 # We shouldn't rely on the user's grep settings to be correct. If we set these
 # here anytime asdf invokes grep it will be invoked with these options
 # shellcheck disable=SC2034
@@ -39,7 +41,7 @@ asdf_repository_url() {
 asdf_data_dir() {
   local data_dir
 
-  if [ -n "${ASDF_DATA_DIR}" ]; then
+  if [ -n "${ASDF_DATA_DIR:-}" ]; then
     data_dir="${ASDF_DATA_DIR}"
   else
     data_dir="$HOME/.asdf"
@@ -103,10 +105,10 @@ list_installed_versions() {
 }
 
 check_if_plugin_exists() {
-  local plugin_name=$1
+  local plugin_name=${1:-}
 
   # Check if we have a non-empty argument
-  if [ -z "${1}" ]; then
+  if [ -z "${1:-}" ]; then
     display_error "No plugin given"
     exit 1
   fi
@@ -139,7 +141,7 @@ version_not_installed_text() {
 }
 
 get_plugin_path() {
-  if test -n "$1"; then
+  if test -n "${1:-}"; then
     printf "%s\\n" "$(asdf_data_dir)/plugins/$1"
   else
     printf "%s\\n" "$(asdf_data_dir)/plugins"
@@ -212,7 +214,7 @@ find_versions() {
 
   get_version_in_dir "$plugin_name" "$HOME" "$legacy_filenames"
 
-  if [ -f "$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME" ]; then
+  if [ -f "${ASDF_DEFAULT_TOOL_VERSIONS_FILENAME:-}" ]; then
     versions=$(parse_asdf_version_file "$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME" "$plugin_name")
     if [ -n "$versions" ]; then
       printf "%s\\n" "$versions|$ASDF_DEFAULT_TOOL_VERSIONS_FILENAME"
@@ -244,21 +246,21 @@ find_install_path() {
 
   if [ "$version" = "system" ]; then
     printf "\\n"
-  elif [ "${version_info[0]}" = "ref" ]; then
+  elif [ "${version_info[0]:-}" = "ref" ]; then
     local install_type="${version_info[0]}"
     local version="${version_info[1]}"
     get_install_path "$plugin_name" "$install_type" "$version"
-  elif [ "${version_info[0]}" = "path" ]; then
+  elif [ "${version_info[0]:-}" = "path" ]; then
     # This is for people who have the local source already compiled
     # Like those who work on the language, etc
     # We'll allow specifying path:/foo/bar/project in .tool-versions
     # And then use the binaries there
     local install_type="path"
     local version="path"
-    printf "%s\\n" "${version_info[1]}"
+    printf "%s\\n" "${version_info[1]:-}"
   else
     local install_type="version"
-    local version="${version_info[0]}"
+    local version="${version_info[0]:-}"
     get_install_path "$plugin_name" "$install_type" "$version"
   fi
 }
@@ -685,7 +687,7 @@ select_version() {
   local plugins
   IFS=$'\n' read -rd '' -a plugins <<<"$(shim_plugins "$shim_name")"
 
-  for plugin_name in "${plugins[@]}"; do
+  for plugin_name in "${plugins[@]:-}"; do
     local version_and_path
     local version_string
     local usable_plugin_versions
@@ -693,8 +695,8 @@ select_version() {
     version_and_path=$(find_versions "$plugin_name" "$search_path")
     IFS='|' read -r version_string _path <<<"$version_and_path"
     IFS=' ' read -r -a usable_plugin_versions <<<"$version_string"
-    for plugin_version in "${usable_plugin_versions[@]}"; do
-      for plugin_and_version in "${shim_versions[@]}"; do
+    for plugin_version in "${usable_plugin_versions[@]:-}"; do
+      for plugin_and_version in "${shim_versions[@]:-}"; do
         local plugin_shim_name
         local plugin_shim_version
         IFS=' ' read -r plugin_shim_name plugin_shim_version <<<"$plugin_and_version"
@@ -763,21 +765,25 @@ with_shim_executable() {
 
     local shim_plugins
     IFS=$'\n' read -rd '' -a shim_plugins <<<"$(shim_plugins "$shim_name")"
-    for shim_plugin in "${shim_plugins[@]}"; do
+    for shim_plugin in "${shim_plugins[@]:-}"; do
       local shim_versions
       local version_string
       version_string=$(get_preset_version_for "$shim_plugin")
       IFS=' ' read -r -a shim_versions <<<"$version_string"
       local usable_plugin_versions
-      for shim_version in "${shim_versions[@]}"; do
+
+      # Yes, the syntax for the expansion is ugly and confusing, but it is what we
+      # need to do to make it work with the nounset option. See
+      # https://stackoverflow.com/q/7577052/ for the details
+      for shim_version in ${shim_versions[@]+"${shim_versions[@]}"}; do
         preset_plugin_versions+=("$shim_plugin $shim_version")
       done
     done
 
-    if [ -n "${preset_plugin_versions[*]}" ]; then
+    if [ -n "${preset_plugin_versions[*]:-}" ]; then
       printf "%s %s\\n" "No preset version installed for command" "$shim_name"
       printf "%s\\n\\n" "Please install a version by running one of the following:"
-      for preset_plugin_version in "${preset_plugin_versions[@]}"; do
+      for preset_plugin_version in "${preset_plugin_versions[@]:-}"; do
         printf "%s %s\\n" "asdf install" "$preset_plugin_version"
       done
       printf "\\n%s %s\\n" "or add one of the following versions in your config file at" "$closest_tool_version"

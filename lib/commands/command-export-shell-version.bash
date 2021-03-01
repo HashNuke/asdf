@@ -1,8 +1,9 @@
 # -*- sh -*-
+set -o nounset
 
 # Output from this command must be executable shell code
 shell_command() {
-  local asdf_shell="$1"
+  local asdf_shell="${1:-}"
   shift
 
   if [ "$#" -lt "2" ]; then
@@ -11,7 +12,7 @@ shell_command() {
     exit 1
   fi
 
-  local plugin=$1
+  local plugin=${1:-}
   local version=$2
 
   local upcase_name

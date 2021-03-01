@@ -1,9 +1,10 @@
 # -*- sh -*-
+set -o nounset
 
 plugin_test_command() {
 
-  local plugin_name=$1
-  local plugin_url=$2
+  local plugin_name=${1:-}
+  local plugin_url=${2:-}
   local plugin_command_array=()
   local plugin_command
   local plugin_gitref="master"
@@ -12,31 +13,31 @@ plugin_test_command() {
   set -- ${*:3}
 
   while [[ $# -gt 0 ]]; do
-    case $1 in
+    case ${1:-} in
     --asdf-plugin-gitref)
-      plugin_gitref="$2"
+      plugin_gitref="${2:-}"
       shift # past flag
       shift # past value
       ;;
     --asdf-tool-version)
-      tool_version="$2"
+      tool_version="${2:-}"
       shift # past flag
       shift # past value
       ;;
     *)
-      plugin_command_array+=("$1") # save it in an array for later
+      plugin_command_array+=("${1:-}") # save it in an array for later
       shift                        # past argument
       ;;
     esac
   done
 
-  plugin_command="${plugin_command_array[*]}"
+  plugin_command="${plugin_command_array[*]:-}"
 
   local exit_code
   local TEST_DIR
 
   fail_test() {
-    printf "FAILED: %s\\n" "$1"
+    printf "FAILED: %s\\n" "${1:-}"
     rm -rf "$TEST_DIR"
     exit 1
   }
